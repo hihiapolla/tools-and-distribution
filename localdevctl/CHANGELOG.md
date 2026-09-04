@@ -18,6 +18,8 @@ older than that version — write entries for the person running `localdevctl`.
   there: every UI, its login, the deploy command, and live up/down dots via `/probe/<name>`.
 - **DbGate** (`app deploy dbgate`, `http://dbgate.local`, `admin` / `localdev123`): MIT web SQL
   client with ER diagrams; connection to the local Postgres preconfigured, every database visible.
+- **MariaDB 10.11** (`mariadb deploy|status|cli`, part of `up`): `localhost:3306`, root / `mariadb`, on the data
+  dir, tuned for Phabricator — shared by Phabricator and any MySQL-shaped service; browsable in DbGate.
 - **Redis 7** (`redis deploy|status|cli`, part of `up`): `localhost:6379`, no auth, AOF on the data
   dir. **RedisInsight** as `app deploy redisinsight` → `http://redisinsight.local`, connection preconfigured.
 - **Pub/Sub emulator** (`pubsub deploy|status|seed|topics`, part of `up`): official image,
@@ -27,12 +29,19 @@ older than that version — write entries for the person running `localdevctl`.
 - **Phabricator** as `app deploy phabricator` → `http://phabricator.local`: **Phorge** (maintained fork,
   same Conduit API) + MariaDB 10.11. No maintained upstream image exists, so the app dir carries an
   `image/Dockerfile` that `app deploy` **builds and pushes to the local registry** — the first in-house
-  image the registry serves. First registered user becomes admin. Generic: any app with
+  image the registry serves. First registered user becomes admin. Databases go to the core MariaDB. Generic: any app with
   `image/Dockerfile` gets built + pushed the same way.
 - **Camunda 7** as `app deploy camunda` → `http://camunda.local/camunda/app/` (`demo` / `demo`): Run 7.21 on
   the local Postgres — mamunda's engine generation, for BPMN/DMN and `/engine-rest` work.
 - **Directus 11** as `app deploy directus` → `http://directus.local` (`admin@localdev.local` / `localdev123`):
   headless CMS / instant REST+GraphQL over its own Postgres db, uploads on the data dir.
+- **Keycloak 26** as `app deploy keycloak` → `http://keycloak.local/admin/` (`admin` / `localdev123`): OIDC/SAML
+  identity provider on the local Postgres. **Backstage 1.44** as `app deploy backstage` → `http://backstage.local`
+  (guest sign-in): official example-app image, plugins as schemas in one db, example catalog preloaded.
+- Upgrade rule documented (docs → Updates): only `kind-cluster.yaml` changes need `down && up`; anything else is
+  `app deploy NAME` / `<group> deploy` / idempotent `up`.
+- **Per-group help**: `localdevctl <group> help` (also `-h`/`--help`, and any unknown verb) lists that
+  group's verbs with one-line explanations — `db help`, `pki help`, `app help`, …
 - **Home page UX**: icon tiles per service; click opens a right-hand sheet with status, URL, login,
   ports, commands (copy) and a Launch button. `app list` now shows `installed` / `starting` /
   `not installed` per app.
@@ -40,8 +49,12 @@ older than that version — write entries for the person running `localdevctl`.
   (URLs, logins, redeploy commands — no more hunting for the Redash password).
 
 ### Changed
+- Positioning: `localdevctl` is a **generic** local development environment (one kind cluster with the
+  databases, brokers, registry and tools your services need). CFG-specific bits are optional hooks:
+  `blueprint/dbctl` seeding (any dir via `--blueprint`) and the Vault KV mount (`LOCALDEV_KV_MOUNT`,
+  default unchanged). Wording updated in help, docs, README, home page; dev CA CN is now `localdev-ca`.
 - `ingress hosts` line now includes `home.local`, `container-image-registry.local`, `pubsub.local`, `dbgate.local`,
-  `redisinsight.local`, `pubsub-ui.local`. New host ports **6379** (Redis) and **8085** (Pub/Sub) must be free.
+  `redisinsight.local`, `pubsub-ui.local`. New host ports **3306** (MariaDB), **6379** (Redis) and **8085** (Pub/Sub) must be free.
 - Jenkins and n8n get a `chown` init container (hostPath volumes ignore `fsGroup`).
 
 ## 0.7.0 — 2026-09-04
