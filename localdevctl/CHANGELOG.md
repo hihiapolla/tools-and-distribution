@@ -29,6 +29,13 @@ older than that version — write entries for the person running `localdevctl`.
   `image/Dockerfile` that `app deploy` **builds and pushes to the local registry** — the first in-house
   image the registry serves. First registered user becomes admin. Generic: any app with
   `image/Dockerfile` gets built + pushed the same way.
+- **Camunda 7** as `app deploy camunda` → `http://camunda.local/camunda/app/` (`demo` / `demo`): Run 7.21 on
+  the local Postgres — mamunda's engine generation, for BPMN/DMN and `/engine-rest` work.
+- **Directus 11** as `app deploy directus` → `http://directus.local` (`admin@localdev.local` / `localdev123`):
+  headless CMS / instant REST+GraphQL over its own Postgres db, uploads on the data dir.
+- **Home page UX**: icon tiles per service; click opens a right-hand sheet with status, URL, login,
+  ports, commands (copy) and a Launch button. `app list` now shows `installed` / `starting` /
+  `not installed` per app.
 - **Cheat sheet**: `docs/05-cheatsheet.md` + the same table at the end of `up` and `status`
   (URLs, logins, redeploy commands — no more hunting for the Redash password).
 
