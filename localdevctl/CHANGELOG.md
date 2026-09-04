@@ -3,6 +3,28 @@
 Newest first. Each `## X.Y.Z` section is shown verbatim in the update banner of installs
 older than that version — write entries for the person running `localdevctl`.
 
+## 0.8.0 — 2026-09-05
+
+### Added
+- **Data survives `down`**: `~/.localdev/data` (`LOCALDEV_DATA`) is mounted into every kind node
+  and bound through static PersistentVolumes (`manifests/storage/volumes.yaml`) for Postgres,
+  the registry, Jenkins, n8n and DbGate. `down` keeps it, `down --purge-data` wipes it, `status`
+  shows per-service sizes. **Needs one cluster recreate** (`down && up`, then `db deploy` once more).
+- **Image registry** at `http://container-image-registry.local` (`registry deploy|status|catalog`,
+  part of `up`): push from the host through the ingress, nodes pull the same ref via a containerd
+  mirror (`hosts.toml` → own NodePort 30500) — works for Jenkins pushes and Argo CD pulls too.
+  Plain http, so add it to Docker's `insecure-registries` once; `registry status` tells you.
+- **Home page** `http://home.local`, also the ingress default so plain `http://localhost/` lands
+  there: every UI, its login, the deploy command, and live up/down dots via `/probe/<name>`.
+- **DbGate** (`app deploy dbgate`, `http://dbgate.local`, `admin` / `localdev123`): MIT web SQL
+  client with ER diagrams; connection to the local Postgres preconfigured, every database visible.
+- **Cheat sheet**: `docs/05-cheatsheet.md` + the same table at the end of `up` and `status`
+  (URLs, logins, redeploy commands — no more hunting for the Redash password).
+
+### Changed
+- `ingress hosts` line now includes `home.local`, `container-image-registry.local`, `dbgate.local`.
+- Jenkins and n8n get a `chown` init container (hostPath volumes ignore `fsGroup`).
+
 ## 0.7.0 — 2026-09-04
 
 ### Added
