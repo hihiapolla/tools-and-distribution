@@ -29,7 +29,7 @@ older than that version — write entries for the person running `localdevctl`.
 ## 0.5.0 — 2026-09-04
 
 ### Added
-- **Release pipeline**: `./release.sh build|package|publish|all` — cross-compiles, packages one
+- **Release pipeline**: `./release build|package|ship` — cross-compiles, packages one
   tarball per OS/arch (binary + bash tool + manifests/seed/docs + install.sh, with SHA256SUMS),
   and stages `VERSION`/`CHANGELOG.md`/`SHA256SUMS` into the public
   `hihiapolla/tools-and-distribution` checkout. Pushing and uploading the GitHub Release
