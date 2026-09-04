@@ -18,11 +18,23 @@ older than that version — write entries for the person running `localdevctl`.
   there: every UI, its login, the deploy command, and live up/down dots via `/probe/<name>`.
 - **DbGate** (`app deploy dbgate`, `http://dbgate.local`, `admin` / `localdev123`): MIT web SQL
   client with ER diagrams; connection to the local Postgres preconfigured, every database visible.
+- **Redis 7** (`redis deploy|status|cli`, part of `up`): `localhost:6379`, no auth, AOF on the data
+  dir. **RedisInsight** as `app deploy redisinsight` → `http://redisinsight.local`, connection preconfigured.
+- **Pub/Sub emulator** (`pubsub deploy|status|seed|topics`, part of `up`): official image,
+  `PUBSUB_EMULATOR_HOST=localhost:8085`, REST at `http://pubsub.local`. The emulator is in-memory, so
+  `pubsub seed PROJECT TOPIC[:SUB]…` records what you create in `~/.localdev/data/pubsub/seed.log`
+  and `pubsub deploy` replays it. **Pub/Sub emulator UI** as `app deploy pubsub-ui` → `http://pubsub-ui.local`.
+- **Phabricator** as `app deploy phabricator` → `http://phabricator.local`: **Phorge** (maintained fork,
+  same Conduit API) + MariaDB 10.11. No maintained upstream image exists, so the app dir carries an
+  `image/Dockerfile` that `app deploy` **builds and pushes to the local registry** — the first in-house
+  image the registry serves. First registered user becomes admin. Generic: any app with
+  `image/Dockerfile` gets built + pushed the same way.
 - **Cheat sheet**: `docs/05-cheatsheet.md` + the same table at the end of `up` and `status`
   (URLs, logins, redeploy commands — no more hunting for the Redash password).
 
 ### Changed
-- `ingress hosts` line now includes `home.local`, `container-image-registry.local`, `dbgate.local`.
+- `ingress hosts` line now includes `home.local`, `container-image-registry.local`, `pubsub.local`, `dbgate.local`,
+  `redisinsight.local`, `pubsub-ui.local`. New host ports **6379** (Redis) and **8085** (Pub/Sub) must be free.
 - Jenkins and n8n get a `chown` init container (hostPath volumes ignore `fsGroup`).
 
 ## 0.7.0 — 2026-09-04
