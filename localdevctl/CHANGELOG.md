@@ -3,6 +3,25 @@
 Newest first. Each `## X.Y.Z` section is shown verbatim in the update banner of installs
 older than that version — write entries for the person running `localdevctl`.
 
+## 0.7.0 — 2026-09-04
+
+### Added
+- **Argo CD** (`app deploy argocd`, `http://argocd.local`): upstream v2.12.6 install vendored,
+  runs in its own `argocd` namespace in insecure mode behind the ingress; admin password set to
+  `localdev123` on deploy. `argocd login argocd.local --plaintext --username admin`.
+- **Jenkins** (`app deploy jenkins`, `http://jenkins.local`): LTS (JDK 17), setup wizard off,
+  Configuration-as-Code with local admin `admin` / `localdev123`, plugins (git, pipeline,
+  kubernetes, blueocean, …) installed by an init container on first start, `JENKINS_HOME` on a PVC.
+- App framework: optional `manifests/apps/<name>/meta.sh` (`APP_NS`, `APP_DB=0`, `APP_SELECTOR`,
+  `APP_WAIT`, `APP_MEM`), multiple `*.yaml` per app applied in order, own-namespace apps are
+  removed by deleting the namespace. `app list` shows memory hints.
+
+### Changed
+- `release.sh` is now `./release` with `build [V]` · `package [V]` (build + tarballs + stage) ·
+  `ship|publish [V]` (push + GitHub release) · `clean`.
+- Ingress applies retry until the ingress-nginx admission webhook is reachable (fixes
+  "connection refused" right after `up`).
+
 ## 0.6.0 — 2026-09-04
 
 ### Added
