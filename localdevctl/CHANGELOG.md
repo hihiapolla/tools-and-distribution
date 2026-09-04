@@ -3,6 +3,29 @@
 Newest first. Each `## X.Y.Z` section is shown verbatim in the update banner of installs
 older than that version — write entries for the person running `localdevctl`.
 
+## 0.6.0 — 2026-09-04
+
+### Added
+- **Ingress + hostnames**: ingress-nginx (pinned kind manifest, host :80/:443) with
+  `grafana.local`, `loki.local`, `docs.local`, `vault.local`. `ingress deploy|status|hosts`;
+  `hosts` prints the `/etc/hosts` line and sudo command. Part of `up`.
+- **Apps** (`app list|deploy|status|delete NAME`): optional tools in `manifests/apps/<name>/`,
+  each with its own Postgres role+db and `<name>.local` Ingress, deployed on demand:
+  - **Redash** 10 (server/scheduler/worker + Redis) — schema, root user `admin@localdev.local` /
+    `localdev123`, and a data source per local database, all automated.
+  - **Metabase** v0.50 — setup wizard completed via API (same admin), every local database
+    registered.
+  - **n8n** 1.64 — Postgres-backed, PVC for `.n8n`, webhooks on `http://n8n.local`.
+- **Docs site rebuilt on Docsify**: sidebar, full-text search, copy button on every code
+  block, bash/yaml/sql highlighting, tabbed sections, prev/next pagination. Same `serve.py`
+  (now a plain static server) and same in-cluster deployment. New pages: Ingress, Apps.
+
+### Changed
+- `kind-cluster.yaml` gains the :80/:443 mappings and the `ingress-ready` node label.
+  **Existing clusters must be recreated** (`down` + `up`, then `db deploy`); `kube up`
+  refuses to continue on a cluster without the mappings.
+- `up` prints the ingress hostnames and the `app deploy` hint.
+
 ## 0.5.0 — 2026-09-04
 
 ### Added
