@@ -40,6 +40,10 @@ older than that version — write entries for the person running `localdevctl`.
   (guest sign-in): official example-app image, plugins as schemas in one db, example catalog preloaded.
 - Upgrade rule documented (docs → Updates): only `kind-cluster.yaml` changes need `down && up`; anything else is
   `app deploy NAME` / `<group> deploy` / idempotent `up`.
+- App verbs are now **`app install NAME`** / **`app uninstall NAME [--purge-db]`** (`deploy` / `delete` still work as aliases).
+  Argo CD's `app list` state fixed (its pods carry `app.kubernetes.io/name`, not `part-of`).
+- `app install`: when a rollout times out, print the non-running pods, their last events, and the recovery
+  recipe (pre-pull + `kube load-image`, `describe`/`logs`, re-run) instead of a bare kubectl error.
 - **Per-group help**: `localdevctl <group> help` (also `-h`/`--help`, and any unknown verb) lists that
   group's verbs with one-line explanations — `db help`, `pki help`, `app help`, …
 - **Home page UX**: icon tiles per service; click opens a right-hand sheet with status, URL, login,
