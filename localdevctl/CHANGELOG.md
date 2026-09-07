@@ -6,6 +6,8 @@ older than that version — write entries for the person running `localdevctl`.
 ## 0.9.3 — 2026-09-07
 
 ### Changed
+- **Releases are automated**: a change to `devops-x/VERSION` on `main` runs `.github/workflows/localdevctl-release.yml`
+  (package + ship on ubuntu-latest, secret `TAD_RELEASE_TOKEN`). Maintainer docs in docs/20-updates.md.
 - **`status` / `app list` are colour-coded** on a terminal: green ● ok (Running, Ready, installed), yellow ●
   in progress (Pending, ContainerCreating, …), red ● problem (not reachable, not installed, CrashLoopBackOff, …).
   `NO_COLOR=1` or a pipe keeps the plain text.
