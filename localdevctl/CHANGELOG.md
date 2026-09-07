@@ -3,6 +3,27 @@
 Newest first. Each `## X.Y.Z` section is shown verbatim in the update banner of installs
 older than that version — write entries for the person running `localdevctl`.
 
+## 0.9.0 — 2026-09-07
+
+### Added
+- **`sv config load SERVICE ENV [-p PATH]`** — the `svctl config load` equivalent for the local
+  environment (native binary). Copies `configs.static`, renders every `configs.dynamic` konfigctl
+  template directory (`{{ }}` pongo2 subset: `lookup_kv`/`lookup_all_kv`/`lookup_env` + the
+  konfigctl filters) into `.build/SERVICE/ENV`, with `lookup_kv` served by the **local Vault**
+  through the same mount-table resolution konfigctl uses. Missing secrets render as `__MISSING__`
+  and the command prints the `pki vault kv put` lines to seed them. First target: chermes `opsapp dev`.
+
+### Changed
+- **Auto-update.** A newer release is now installed on your next run and your command re-runs
+  on it — no re-curl after a release. The version check runs every 5 min instead of 24 h.
+  `LOCALDEV_AUTO_UPDATE=0` brings back the `Update now? [y/N]` prompt; `LOCALDEV_NO_UPDATE_CHECK=1`
+  still disables the check; source-linked installs never update.
+- `db database migration deploy DB [SCHEMA]` — optional schema, same shape as dbctl. Each
+  migration now runs with `search_path = "<schema>", "$user", public`, mirroring Flyway's
+  `flyway.schemas` (prepended, so `public` helpers stay visible from other schemas); before,
+  a non-public schema like chermes `ops/messagingout` failed on unqualified type names and left
+  half-applied objects. `__migrator_config__` dirs are skipped.
+
 ## 0.8.0 — 2026-09-05
 
 ### Added
