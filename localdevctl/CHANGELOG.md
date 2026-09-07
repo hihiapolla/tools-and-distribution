@@ -40,10 +40,23 @@ older than that version — write entries for the person running `localdevctl`.
   (guest sign-in): official example-app image, plugins as schemas in one db, example catalog preloaded.
 - Upgrade rule documented (docs → Updates): only `kind-cluster.yaml` changes need `down && up`; anything else is
   `app deploy NAME` / `<group> deploy` / idempotent `up`.
+- Fixed: `app install metabase` ended with `pf: unbound variable` (a RETURN trap leaking into the caller); the
+  install itself had succeeded.
 - App verbs are now **`app install NAME`** / **`app uninstall NAME [--purge-db]`** (`deploy` / `delete` still work as aliases).
   Argo CD's `app list` state fixed (its pods carry `app.kubernetes.io/name`, not `part-of`).
 - `app install`: when a rollout times out, print the non-running pods, their last events, and the recovery
   recipe (pre-pull + `kube load-image`, `describe`/`logs`, re-run) instead of a bare kubectl error.
+- **GitLab CE 18** as `app install gitlab` → `http://gitlab.local` (`root` / `localdev123`): Omnibus image trimmed
+  for a laptop (puma single mode, monitoring off), bundled pg/redis, everything on the data dir. ~4 GB, first boot
+  5–10 min, git over http.
+- `app install` applies `manifests/storage/volumes.yaml` first, so an app added by an update gets its PV without `up`.
+- Fixed: Backstage rendered an empty page on `http://backstage.local` (its default CSP `upgrade-insecure-requests`
+  made the browser hit https://); disabled for plain-http local use.
+- **Kube metrics**: `monitoring deploy` now also installs **Prometheus 3** (kubelet/cAdvisor, apiserver,
+  kube-state-metrics, node-exporter, `prometheus.io/scrape` annotations; 15 d TSDB on the data dir) at
+  `http://prometheus.local`, provisions it as Grafana's default datasource next to Loki, and ships two dashboards
+  (folder `localdev`: *Cluster & pods*, *Nodes*). `monitoring targets` lists scrape targets. Grafana, Loki, the
+  registry and Keycloak are annotated for scraping.
 - **Per-group help**: `localdevctl <group> help` (also `-h`/`--help`, and any unknown verb) lists that
   group's verbs with one-line explanations — `db help`, `pki help`, `app help`, …
 - **Home page UX**: icon tiles per service; click opens a right-hand sheet with status, URL, login,
