@@ -3,6 +3,17 @@
 Newest first. Each `## X.Y.Z` section is shown verbatim in the update banner of installs
 older than that version — write entries for the person running `localdevctl`.
 
+## 0.9.3 — 2026-09-07
+
+### Changed
+- **`status` / `app list` are colour-coded** on a terminal: green ● ok (Running, Ready, installed), yellow ●
+  in progress (Pending, ContainerCreating, …), red ● problem (not reachable, not installed, CrashLoopBackOff, …).
+  `NO_COLOR=1` or a pipe keeps the plain text.
+- `status` vault line now says which of three things is wrong: not running, this install has no cached server
+  cert yet, or the cached cert is stale after a Vault pod restart (the fix is `pki vault seed` for the last two).
+- The Docker insecure-registry check accepts a CIDR that covers the registry's address (Docker Desktop lists
+  `127.0.0.0/8` by default, which is why pushes already worked while the check complained).
+
 ## 0.9.2 — 2026-09-07
 
 ### Added
