@@ -3,6 +3,19 @@
 Newest first. Each `## X.Y.Z` section is shown verbatim in the update banner of installs
 older than that version — write entries for the person running `localdevctl`.
 
+## 0.9.2 — 2026-09-07
+
+### Added
+- **`app install gitops-demo`** — learn Argo CD + Jenkins together: an in-cluster git server (bare repos on
+  `~/.localdev/data/git`, http push), seeded `demo-app` (source + Jenkinsfile) and `demo-deploy` (kustomize)
+  repos, a Jenkins pipeline job building with kaniko on a Kubernetes agent pod, post-receive hooks that
+  queue the Jenkins job / webhook Argo CD, and an Argo CD Application auto-syncing into namespace `demo`
+  (`http://demo.local`). Jenkins JCasC now ships a Kubernetes cloud for agent pods.
+
+### Changed
+- `app install` honours `APP_URL` from an app's `meta.sh` for the printed URL (multi-host apps).
+- `LOCALDEV_GITOPS_DEMO_DIR` chooses where gitops-demo's working clones are created.
+
 ## 0.9.0 — 2026-09-07
 
 ### Added
