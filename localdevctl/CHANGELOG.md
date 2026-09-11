@@ -3,7 +3,15 @@
 Newest first. Each `## X.Y.Z` section is shown verbatim in the update banner of installs
 older than that version — write entries for the person running `localdevctl`.
 
-## 0.9.4 — unreleased
+## 0.9.5 — 2026-09-12
+
+### Fixed
+- **Native binary: `gcs`, `pubsub`, `redis`, `registry`, `mariadb`, `home` said `unknown command`.** The TypeScript
+  edition only delegated an allow-list of groups to the bash tool; anything newer fell through to the usage text
+  (the 0.9.4 `gcs` group was unreachable unless you ran with `LOCALDEV_BASH=1`). Every command the binary has not
+  ported now delegates. `help` lists `gcs` and `gcp-emulator-ui`.
+
+## 0.9.4 — 2026-09-12
 
 ### Added
 - **GCS emulator** — `localdevctl gcs deploy|status|seed|buckets`, part of `up`: [fsouza/fake-gcs-server](https://github.com/fsouza/fake-gcs-server)
@@ -15,24 +23,6 @@ older than that version — write entries for the person running `localdevctl`.
 - **`app install gcp-emulator-ui`** — [drehelis/gcp-emulator-ui](https://github.com/drehelis/gcp-emulator-ui) (MIT, digest-pinned) at
   `http://gcp-emulator-ui.local`: browse/upload/download fake-gcs buckets and objects, plus Pub/Sub topics and messages, in one
   console. Proxies to the in-cluster emulators itself, so no browser-side setup and no CORS. `pubsub-ui` stays available.
-- **metrics-server** (`metrics.k8s.io`) is part of `monitoring deploy` / `up`: `kubectl top` and
-  HorizontalPodAutoscalers work. `monitoring status` reports it. Existing clusters: `localdevctl monitoring deploy`.
-- **gitops-demo: demo-deploy is now three Applications from one repo**, one folder each:
-  `basicapplication/` → `demo-basic` (http://basic.local, the plain loop), `autoscaledapplication/` →
-  `demo-autoscaled` (http://autoscaled.local: `PreSync` migration Job hook, `sync-wave` ordering, HPA 2–5 pods on
-  50 % CPU with `replicas` handed to the HPA), `stackapplication/` → `demo-stack` (http://stack.local: Redis cache,
-  seed Job, api, worker CronJob as ONE unit, waves 1–5), **plus the same three as Helm charts**
-  (`basichelmapplication/`, `autoscaledhelmapplication/`, `stackhelmapplication/` → `demo-*-helm`, `*-helm.local`;
-  `values.yaml` + `values-dev.yaml`, `checksum/config` roll, `autoscaling.enabled` switch). Jenkins bumps the tag
-  in basic + autoscaled, kustomize and helm alike.
-
-### Changed
-- **`app install gitops-demo` no longer creates the Argo CD Application** — creating the Applications is the exercise.
-  Reference specs in `manifests/apps/gitops-demo/argocd/{basic,autoscaled,stack}.yml`; docs/50-apps.md walks through
-  the UI, `kubectl apply` and the `argocd` CLI. **Existing installs:** copy
-  `seed/demo-deploy/{basicapplication,autoscaledapplication,stackapplication}` into your clone, delete the old `base/` +
-  `overlays/`, push, delete the old `demo-app` Application (`kubectl -n argocd delete application demo-app`), then
-  create the new ones. Add the three hosts to /etc/hosts (`localdevctl ingress hosts`).
 
 ## 0.9.3 — 2026-09-07
 
