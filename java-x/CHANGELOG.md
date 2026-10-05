@@ -4,6 +4,25 @@ All notable changes to the Java X extension. Versions up to 0.14.x were
 reconstructed retroactively (no changelog was kept); from 0.15.0 on, every
 release gets an entry when it ships.
 
+## 0.90.0 — 2026-10-05
+
+- **Nested Gradle builds are their own projects.** A folder with its own
+  `settings.gradle(.kts)` inside another build (e.g. `midas/documentprotection`,
+  which midas does not include) used to be invisible: the scan stopped at the
+  outer build, and the outer build listed the inner one's folders as modules
+  and put its `src/` folders on its own classpath. Now the inner build gets its
+  own row in the Projects view (`· nested in <parent>`), installs, connects
+  and runs with its own Gradle wrapper, and the outer build's modules,
+  source folders and tests stop at it. `buildSrc` is never a project or a
+  module. Files map to the deepest project that contains them (test CodeLens,
+  Show in Project Explorer, Class Test Lab, dashboard main classes, Class
+  Inspector). Run **Refresh** on the Projects view after adding a nested
+  `settings.gradle`.
+- **Java level from toolchains.** The connected project's Java level now also
+  reads `JavaLanguageVersion.of(N)` from the build files and `buildSrc`
+  convention plugins, so a toolchain-only build (no `sourceCompatibility`)
+  compiles as Java 21 instead of falling back to Java 11.
+
 ## 0.89.0 — 2026-10-05
 
 - **Fix: a failed update check no longer waits 24 h.** 0.88.0 stored the
