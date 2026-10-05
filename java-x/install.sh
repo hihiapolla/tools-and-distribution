@@ -8,7 +8,7 @@
 # No auth, no git, no tokens: releases live on this public repo.
 #
 # Env: JAVAX_VERSION=x.y.z        pin a version (default: java-x/VERSION in this repo)
-#      JAVAX_EDITOR_CLI=<cli>     editor CLI to install into (default: first of code, cursor on PATH)
+#      JAVAX_EDITOR_CLI=<cli>     editor CLI to install into (default: first of code, cursor on PATH, else the CLI bundled in the VS Code / Cursor app)
 set -euo pipefail
 
 SLUG="${JAVAX_DIST_SLUG:-hihiapolla/tools-and-distribution}"
@@ -19,8 +19,26 @@ CLI="${JAVAX_EDITOR_CLI:-}"
 if [ -z "$CLI" ]; then
   for c in code cursor; do command -v "$c" >/dev/null 2>&1 && { CLI="$c"; break; }; done
 fi
+# Not on PATH (the "Install 'code' command" step was skipped): use the CLI bundled inside the editor app.
+if [ -z "$CLI" ]; then
+  r="${_JAVAX_TEST_ROOT:-}"  # test hook only: re-roots the system paths below
+  for b in "$r/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code" "$HOME/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code" \
+           "$r/Applications/Cursor.app/Contents/Resources/app/bin/cursor" "$HOME/Applications/Cursor.app/Contents/Resources/app/bin/cursor" \
+           "$r/usr/share/code/bin/code" "$r/snap/bin/code" "$r/usr/share/cursor/bin/cursor" "$r/opt/cursor/resources/app/bin/cursor"; do
+    [ -x "$b" ] && { CLI="$b"; break; }
+  done
+  # Last resort (macOS): Spotlight finds the app wherever it lives, by bundle id (VS Code, Cursor).
+  if [ -z "$CLI" ] && command -v mdfind >/dev/null 2>&1; then
+    for id in com.microsoft.VSCode=code com.todesktop.230313mzl4w4u92=cursor; do
+      while IFS= read -r app; do
+        [ -x "$app/Contents/Resources/app/bin/${id#*=}" ] && { CLI="$app/Contents/Resources/app/bin/${id#*=}"; break 2; }
+      done < <(mdfind "kMDItemCFBundleIdentifier == '${id%%=*}'" 2>/dev/null)
+    done
+  fi
+  [ -n "$CLI" ] && echo "note: no code/cursor on PATH — using $CLI (to add it: Command Palette → \"Shell Command: Install 'code' command in PATH\"; Cursor → \"Install 'cursor' command\")" >&2
+fi
 [ -n "$CLI" ] && command -v "$CLI" >/dev/null 2>&1 || {
-  echo "error: no editor CLI found (looked for: ${JAVAX_EDITOR_CLI:-code, cursor})" >&2
+  echo "error: no editor CLI found (looked for: ${JAVAX_EDITOR_CLI:-code, cursor on PATH; the CLI inside Visual Studio Code.app / Cursor.app in /Applications, $HOME/Applications or via Spotlight; /usr/share/code, /snap/bin/code, /usr/share/cursor, /opt/cursor})" >&2
   echo "hint: VS Code → Command Palette → \"Shell Command: Install 'code' command in PATH\"; Cursor → \"Install 'cursor' command\"" >&2
   echo "hint: or set JAVAX_EDITOR_CLI=/path/to/code" >&2
   exit 1
