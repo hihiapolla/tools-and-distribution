@@ -4,6 +4,45 @@ All notable changes to the Java X extension. Versions up to 0.14.x were
 reconstructed retroactively (no changelog was kept); from 0.15.0 on, every
 release gets an entry when it ships.
 
+## 0.93.0 — 2026-10-05
+
+- **Source folders come from Gradle's own project list, so cermati-java-commons
+  builds in the IDE again.** The flat classpath took every `src/` folder found
+  on disk. cermati-java-commons' `settings.gradle` leaves out `:reactive-commons`,
+  `:all-commons`, `:application-commons`, `:google-commons` and
+  `:secrets-commons`, so Gradle never resolves their dependencies, yet their
+  26 source folders were still added. jdt.ls then stopped with "The project
+  was not built since its build path is incomplete … org.flywaydb.core.Flyway"
+  and compiled none of the repo. Source folders now come from the module
+  directories Install records in `index/<repo>.tasks.json` (103 → 77 for
+  cermati-java-commons; midas only loses `buildSrc`, 254 → 253). Installs
+  without that file still use the directory walk.
+- **No more manual Generate Flat Classpath after Install or an upgrade.** A
+  connected repo's `.classpath` was only written by Connect / Generate, never
+  by Install or a language-server start, so a re-install or a new Java X
+  version kept the old classpath until Generate was run by hand. The
+  `.classpath` now carries a format stamp. It is regenerated when an Install
+  finishes, and before every language-server start if the index is newer, the
+  stamp is old, or the source folders on disk changed.
+- **Annotation-processor output is on the classpath.** JPA metamodel classes
+  (`Item_`, `BaseDataEntity_`, about 130 Problems in midas) and MapStruct impls
+  exist only under `build/generated/sources/annotationProcessor/java/{main,test}`,
+  which Java X skipped. Those folders are now added when a local compile has
+  produced them (midas: 75), as optional entries, so a later `gradle clean`
+  doesn't break the build path. Java X runs no Gradle to create them. They add
+  no duplicate classes in midas or cermati-java-commons.
+- **Run/Debug from the editor works like the Main Classes view.** The main()
+  Run/Debug lens and F5 (no launch.json) now find the owning repo from the
+  source file (deepest Gradle root) and launch through the Gradle runner.
+  Before, a file jdt.ls held in its default project had no project name, so
+  the launch fell back to the jdt classpath and failed with "Main class … isn't
+  unique in the workspace". jdt-classpath launches now always pass a connected
+  repo's project name (quick pick when several repos declare the class), and a
+  file outside every repo (e.g. a `.worktrees` copy) gets a clear message.
+- **No more false "the build failed" before a jdt launch.** The pre-launch
+  build check sent the debug plugin a malformed argument, so it threw on every
+  jdt launch and reported a failed build.
+
 ## 0.92.0 — 2026-10-05
 
 - **Plugins from the Gradle Plugin Portal resolve again.** Gradle only uses
