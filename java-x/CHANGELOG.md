@@ -4,6 +4,29 @@ All notable changes to the Java X extension. Versions up to 0.14.x were
 reconstructed retroactively (no changelog was kept); from 0.15.0 on, every
 release gets an entry when it ships.
 
+## 0.92.0 — 2026-10-05
+
+- **Plugins from the Gradle Plugin Portal resolve again.** Gradle only uses
+  its built-in Plugin Portal while `pluginManagement.repositories` is empty;
+  the repositories init script made it non-empty, so the portal disappeared
+  and a build that relies on it could not apply its plugins. Install of
+  `midas/documentprotection` failed with `Plugin [id:
+  'io.github.cdsap.talaiot', version: '1.5.3'] was not found`. The init
+  script now adds `gradlePluginPortal()` first when the build declares no
+  plugin repositories, and only appends ours when it declares its own. The
+  same applies to `buildSrc` (it gets the init script too), e.g. a
+  `kotlin-dsl` buildSrc.
+- **Main Classes explains an empty view.** Instead of showing nothing, it now
+  shows one row with the reason and a click action: language server not
+  running (starts it), no repo installed in this window (Install), installed
+  but not connected (Connect). Each window has its own `.javax`, so a window
+  opened on a nested build such as `midas/documentprotection` starts with
+  nothing installed. The row also shows under a Running section, where the
+  welcome text can't. A failed main-class search (`vscode.java.resolveMainClass`)
+  now shows its error as a row (click retries) and logs it to the Java X
+  output, instead of reading as "0 main classes". The row updates when an
+  Install finishes.
+
 ## 0.91.0 — 2026-10-05
 
 - **Per-project Gradle JDK.** Gradle no longer runs every project on the one
