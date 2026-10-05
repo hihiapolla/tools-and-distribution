@@ -34,6 +34,13 @@ release gets an entry when it ships.
   see a version whose `.vsix` is missing.
 - Installs on 0.88.0 update to 0.89.0 with 0.88.0's updater (the old single
   **Reload** prompt); the new prompt applies from 0.89.0 on.
+- **Docs: troubleshooting + AI help in the README.** An "If you are an AI assistant"
+  section, where to look (changelog, settings, output channels, on-disk state), a
+  settings reference table matching `package.json`, and step-by-step fixes for
+  Install/Connect, Gradle ↔ JDK version mismatches, jOOQ / generated classes that
+  "cannot be resolved" (`src/generated/java` vs `build/generated`), and the Cermati
+  nexus over mTLS, now with a second `maven-public` repository entry for the Gradle
+  plugins and artifacts proxied from there.
 
 ## 0.88.0 — 2026-09-29
 
@@ -1654,7 +1661,7 @@ release gets an entry when it ships.
   init script to resolve every module's dependencies into a **central
   workspace `.javax`** — shared, deduplicated `libs/` pool (version conflicts
   become visible), `-sources.jar` resolution, per-repo `index/<repo>.json`.
-- nexus.cermati.com reached through the pkictl mTLS cert converted to a
+- The company Nexus reached through the pkictl mTLS cert converted to a
   fresh PKCS12 keystore per run; Gradle wrapper fallbacks (committed jar →
   cached dist → CI-pinned version); daemon heap injected when the repo sets
   none.
