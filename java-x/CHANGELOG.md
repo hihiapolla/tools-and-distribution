@@ -4,6 +4,37 @@ All notable changes to the Java X extension. Versions up to 0.14.x were
 reconstructed retroactively (no changelog was kept); from 0.15.0 on, every
 release gets an entry when it ships.
 
+## 0.89.0 — 2026-10-05
+
+- **Fix: a failed update check no longer waits 24 h.** 0.88.0 stored the
+  "last checked" time as soon as `VERSION` was read — before the download. If
+  `VERSION` went out before the release `.vsix` existed (or the download
+  failed), clients skipped that release for a day. Now only a finished check
+  (up to date, installed, or notified) starts the 24 h wait; a failed one is
+  retried after about an hour.
+- **Reload recommended after an update.** A background install now says
+  "Java X <ver> installed. Reload the window to use it." with **Reload
+  Window**, **Restart Extensions** and **What's New**. Because notifications
+  get dismissed, a status-bar item `Java X <ver> — reload` stays until you
+  reload (click it to reload). After the reload, "Java X updated to <ver>"
+  appears once, with a link to the release notes.
+- **Version in the Runtime view.** A top row `Java X <ver>` shows the update
+  state: `up to date · checked 2h ago`, `<ver> available`,
+  `<ver> installed — reload pending` or `update check failed` (the tooltip has
+  the error). Inline buttons: Check for Updates, Open Dashboard.
+- **Java X: Open Dashboard** (home icon on the Runtime view). One page with:
+  version & updates (running / latest / last check, the `javaX.autoUpdate`
+  mode, Check now, Reload), getting started (JDK 17+, disabling redhat.java,
+  the manual-import + plug-icon flow, Maven repositories and certificates),
+  what's new (this version's changelog section) and every Java X command,
+  runnable from the list.
+- **Release script** `./release package|ship [VERSION]` builds the `.vsix`,
+  `SHA256SUMS` and release notes, stages `VERSION` in tools-and-distribution,
+  and ships the GitHub release **before** pushing `VERSION`, so clients never
+  see a version whose `.vsix` is missing.
+- Installs on 0.88.0 update to 0.89.0 with 0.88.0's updater (the old single
+  **Reload** prompt); the new prompt applies from 0.89.0 on.
+
 ## 0.88.0 — 2026-09-29
 
 - **Self-update.** Java X ships as a GitHub Release on
