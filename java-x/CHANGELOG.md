@@ -4,6 +4,29 @@ All notable changes to the Java X extension. Versions up to 0.14.x were
 reconstructed retroactively (no changelog was kept); from 0.15.0 on, every
 release gets an entry when it ships.
 
+## 0.91.0 — 2026-10-05
+
+- **Per-project Gradle JDK.** Gradle no longer runs every project on the one
+  workspace JDK. When a build declares a Java level (toolchain
+  `JavaLanguageVersion.of(N)` or `sourceCompatibility`, including `buildSrc`
+  convention plugins) above the workspace JDK, Java X runs that project's
+  Gradle on the lowest installed JDK that meets it. Fixes Install of
+  `midas/documentprotection` failing with `Run this build using a Java 21 or
+  newer JVM` while midas stays on its JDK 11. A project the workspace JDK
+  already satisfies is never moved. If no installed JDK meets the level, Java X
+  warns with the version it needs and falls back to the workspace JDK.
+- **Set Gradle JDK…** on a project (Projects view or Runtime → Gradle) writes
+  the new `javaX.projectJavaHomes` setting (project path → JDK home), which
+  wins over the automatic pick; **Automatic** clears it. `javaX.javaHome`
+  stays the workspace default.
+- Install, Gradle Tasks, Run/Debug builds, tests and the app JVM of a Run all
+  use the project's JDK (a Run/Test Configuration JDK still overrides it). The
+  Gradle ↔ JDK compatibility warning now checks the JDK actually chosen.
+- Runtime → Gradle shows `wrapper X.Y · JDK N` per project (tooltip: path,
+  source, declared level); the Install log line reads
+  `JAVA_HOME: <path> [<source>]`; Diagnostics lists every project's JDK;
+  Runtime's "Bootstrap JDK" row is now "Workspace Gradle JDK".
+
 ## 0.90.0 — 2026-10-05
 
 - **Nested Gradle builds are their own projects.** A folder with its own
