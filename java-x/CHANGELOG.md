@@ -4,6 +4,44 @@ All notable changes to the Java X extension. Versions up to 0.14.x were
 reconstructed retroactively (no changelog was kept); from 0.15.0 on, every
 release gets an entry when it ships.
 
+## 0.94.0 — 2026-10-06
+
+- **No more false `intoXML` / `XMLGregorianCalendar` Problems on Java 9+.**
+  midas showed about 261 "The return types are incompatible for the inherited
+  methods Formattable.intoXML(XMLFormat), AbstractRecord.intoXML(XMLFormat)"
+  errors on its jOOQ records and about 65 "XMLGregorianCalendar cannot be
+  resolved" errors, while Gradle built clean. Cause: `xml-apis-1.4.01.jar`,
+  `xml-apis-1.0.b2.jar` and `stax-api-1.0.1.jar` carry their own copies of
+  `org.w3c.dom`, `javax.xml.*` and `org.xml.sax`, which the JDK's `java.xml`
+  module has owned since Java 9. javac ignores the classpath copy. jdt.ls
+  reports "The package javax.xml.datatype is accessible from more than one
+  module" and resolves `org.w3c.dom.Document` two different ways. Reproduced
+  headlessly with the bundled jdt.ls: with these jars 1 + 6 errors on the two
+  sample files, without them 0. The generated jdt.ls `.classpath` now leaves
+  out jars whose classes are all in packages the JDK exports (judged by the
+  jar's contents, not its name). A version-marker package such as
+  `org.apache.xmlcommons` doesn't count as the jar's own code. This applies
+  only when the repo compiles at Java 9 or later. Jars that mix JDK packages
+  with their own code stay (midas: `xmlbeans-2.3.0`, `transaction-api-1.1`).
+  Gradle Install/Run/Test classpaths are unchanged. The `.classpath`
+  format stamp is now 3, so connected repos regenerate on the next
+  language-server start.
+- **Left-off jars stay visible.** Each jar the filters leave out stays in the
+  `.classpath` as an XML comment after the live jars, naming the JDK module
+  and the first clashing packages (`Java X: omitted, conflicts with JDK
+  module java.xml (javax.xml, javax.xml.namespace, +3 more), see
+  CLASSPATH-NOTES.md`). `--` in a path is written as `- -` so the comment
+  stays valid XML. Every Generate also writes
+  `.javax/eclipse/<repo>/CLASSPATH-NOTES.md`: the Java level the decision used
+  and one row per jar with its path, reason, JDK module(s) and every clashing
+  package. The file is deleted when nothing is left out. The Java X output
+  channel gets one line per Generate listing the jars, with the path of the
+  notes file. The JDK package list now records each package's module
+  (regenerated from JDK 11, same 179 packages).
+- **Classpath filters are a list.** `ClasspathService` runs a `ClasspathFilter`
+  list over the libs before writing (`classpath-filter.ts`). Later rules, such
+  as newest-version de-dup or per-module scoping, are added as new entries.
+
 ## 0.93.0 — 2026-10-05
 
 - **Source folders come from Gradle's own project list, so cermati-java-commons
