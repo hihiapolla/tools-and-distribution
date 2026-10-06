@@ -4,6 +4,76 @@ All notable changes to the Java X extension. Versions up to 0.14.x were
 reconstructed retroactively (no changelog was kept); from 0.15.0 on, every
 release gets an entry when it ships.
 
+## 0.95.0 — 2026-10-06
+
+- **Analyze JAR/Classpath.** A Java file with jdt.ls errors gets one
+  "Analyze JAR/Classpath" CodeLens at its first error line (one per file, not
+  per error — a generated jOOQ record can carry hundreds), and every error gets
+  the same action in its lightbulb, scoped to that error. Also in the Command
+  Palette for the active file. It takes the file's existing Problems (no
+  second language server), reads the types each message names ("X cannot be
+  resolved", "The method m() is undefined for the type T", "The type X is not
+  generic", "Type mismatch", "The return types are incompatible for the
+  inherited methods A.m(P), B.m(P)", split-package messages, …), resolves them
+  through the file's imports and package, then a classpath-wide search by simple
+  name, and looks each one up in the generated `.classpath` (jar central
+  directories, cached per jar path + mtime) and the Install index (which Gradle
+  module resolves which version). One verdict per type: **JDK conflict** (a jar
+  redefines a JDK package), **Version clash** (the same class in 2+ jars or
+  versions; names the jar jdt.ls takes first and whether this file's module
+  resolves another version in Gradle), **Missing** (on no jar and in no source
+  folder: run Install or the jOOQ / annotation-processor generation) or
+  **Clean** (exactly one provider: most likely a real code error).
+- **Recommend-only Gradle snippets.** A version clash picks the latest version
+  and shows both options with their consequences: a scoped `force` for this
+  file's module (midas' `configure(subprojects.findAll { … })` shape, safe for
+  other modules' runtime but the editor error can stay), and a project-wide
+  `force` / `dependencySubstitution` (clears the editor error, changes runtime
+  for every module on another version). Duplicate providers get an `exclude
+  group:/module:` snippet. Java X never edits build.gradle or any project file —
+  the report panel has **Copy report** (Markdown) and **Copy Gradle snippet**
+  only, and each run logs one line to the *Java X* output channel. Checked on
+  midas: the credit-api jOOQ record message comes out as a version clash on
+  `org.jooq:jooq` (3.13.6 / 3.12.4 / 3.12.1 / 3.11.10; `:credit-api` resolves
+  3.11.10, jdt.ls reads 3.13.6); `UpdateTaskServiceImplTest`'s nine real
+  compile errors come out Clean.
+- **Verdicts are a list.** Each verdict is one `VerdictRule` (when it applies +
+  what it recommends), tried in order (`classpath-analysis/utils/verdict.ts`);
+  a fifth verdict is one more entry. markdown-lite gained fenced code blocks.
+- **Review fixes for the lens.** Type variables and types declared in the same
+  file get a new **Declared in this file** verdict instead of a false Missing /
+  Clean. In a single-project repo (root `:`), the Gradle snippets drop the
+  `configure(subprojects…)` wrapper and use `allprojects`, so they work when
+  pasted.
+- **Per-module classpath (opt-in).** New setting `javaX.classpathMode`:
+  `flat` (default, unchanged: one Eclipse project per repo, the holistic view) or
+  `perModule`: one Eclipse project per Gradle module under
+  `.javax/eclipse/<repo>.modules/<repo>.<module>` (root project `<repo>.root`,
+  clashes such as `:a.b` / `:a:b` get `~2`), each with its own source folders
+  (`repo` link → the module dir), ONLY the jars that module resolved (the
+  existing filters still apply per module) and a project reference per module it
+  depends on. On midas, credit-api then compiles against jOOQ 3.11.10 only, the
+  version Gradle uses, where flat puts 3.13.6 first. Switching the mode
+  regenerates every connected repo, deletes the other mode's projects and drops
+  them from a running jdt.ls (also when switched while the LS was off: the
+  stale check at LS start catches it). Generate, Connect, Disconnect, Clean,
+  profiles, the post-Install refresh, Analyze JAR/Classpath (reads the owning
+  module's `.classpath` + its referenced modules' sources), the Inspector's
+  compiled-members lookup and the Main Classes view all handle both modes.
+  Layouts sit behind one `ClasspathLayout` interface (`classpath/layouts/`); a
+  third layout is one more entry in `CLASSPATH_LAYOUTS`. Measured on midas
+  (headless bundled jdt.ls, 3G heap; README → *Classpath mode*): 155 projects;
+  ServiceReady 18–20 s vs 6–7 s fresh, equal on restart (7.6 / 6.8 s); build
+  quiet 160 s vs 196 s fresh, 14 s vs 41 s on restart; live heap 738 vs 479 MB;
+  errors 144 vs 230 (86 classpath artefacts gone, none added).
+- **Install records module dependencies.** `javax.init.gradle` adds
+  `projectDeps` (module → `{ main, test }` Gradle paths, this build only) to
+  `index/<repo>.json`; all existing fields and the progress line are unchanged.
+  `perModule` needs one re-install to get it. Checked on midas (Gradle 6.9.4):
+  153 modules with project deps, `modules` byte-identical to the old index.
+- jdt.ls `javaX.lsAddProject` / `javaX.lsRemoveProject` take one dir or a list
+  (one import request for all module projects).
+
 ## 0.94.0 — 2026-10-06
 
 - **No more false `intoXML` / `XMLGregorianCalendar` Problems on Java 9+.**
