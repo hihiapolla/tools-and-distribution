@@ -4,6 +4,45 @@ All notable changes to the Java X extension. Versions up to 0.14.x were
 reconstructed retroactively (no changelog was kept); from 0.15.0 on, every
 release gets an entry when it ships.
 
+## 0.96.0 — 2026-10-06
+
+- **Main/test classpath separation.** Test code is now marked `test="true"` in
+  the generated `.classpath`, as Buildship and IntelliJ do, so JDT hides it
+  from main sources: `src/test/*` folders, jars that a module gets only from
+  its test classpaths, and (`perModule`) test-only module references. Install
+  records the split as `testOnlyJars` in `index/<repo>.json`; `modules` still
+  lists every jar. `runtimeClasspath` is now resolved too, so `runtimeOnly`
+  jars stay main and main launches keep them. In `flat`, a jar is test only
+  when it is test-only in every module that has it. Fixes midas
+  notificationapp's "The method toMap() is undefined for the type JSONObject":
+  `android-json` (via `spring-boot-starter-test`) came before the real
+  `org.json`. Format stamp 3 → 4, so existing `.classpath` files regenerate.
+  Needs one re-install; until then nothing is marked test. The Inspector now
+  also reads source entries that carry attributes.
+- **Leveled log.** The *Java X* output channel is now a log channel: lines carry
+  VS Code's own timestamp + level and follow *Developer: Set Log Level…*
+  (`debug` lines only show at Debug/Trace). Same channel name, same *Show Java X
+  Log* command. Every line is redacted as it is written: tokens (Bearer, JWT,
+  `ghp_`/`github_pat_`, `ya29.`, PEM blocks, `password=` / `?token=` values,
+  `user:pass@` in URLs), email addresses, home paths (`/Users/<name>` → `~`),
+  16-digit NIK and Indonesian phone numbers.
+- **Degrade, don't die.** Each feature registers inside its own guard: a feature
+  that throws during activation is logged with its stack, the features that
+  need it are skipped ("skipped: depends on …"), and everything else still
+  loads. One warning per activation, *Java X started with errors: n feature(s)
+  failed*, with **Show Logs** / **Report a Problem**. *Show Java X Log* and
+  *Report a Problem* register before any feature.
+- **Java X: Report a Problem…** builds a Markdown report (Java X / VS Code /
+  Node / Electron versions, OS, remote, install source + previous version, this
+  session's activation failures with their first stack frames, the `javaX.*`
+  settings and the last 200 log lines, all redacted a second time) and opens it
+  in an editor: what you see — including your edits — is exactly what is sent.
+  Then **Copy to Clipboard** or **Open GitHub Issue…** on
+  `hihiapolla/tools-and-distribution`, after a confirmation that it is a
+  **public** repository. A report too long for a URL is copied to the clipboard
+  and the issue opens with a paste-here line. Nothing leaves the machine unless
+  you click; no telemetry.
+
 ## 0.95.0 — 2026-10-06
 
 - **Analyze JAR/Classpath.** A Java file with jdt.ls errors gets one
